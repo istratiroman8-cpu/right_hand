@@ -1,38 +1,74 @@
-const CACHE = 'roman-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap'
+// Roman Task Manager — Service Worker
+// Versione cache: aggiorna questo valore ad ogni deploy per invalidare la cache
+const CACHE_NAME = 'roman-tasks-v1';
+
+// Risorse da pre-cachare (tutte le risorse essenziali dell'app)
+const PRECACHE_URLS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
 ];
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))
+// ── INSTALL: pre-cacha le risorse essenziali ──────────────────────────────────
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(PRECACHE_URLS);
+    })
   );
+  // Attiva immediatamente senza aspettare che le tab esistenti vengano chiuse
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+// ── ACTIVATE: rimuovi cache obsolete ─────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
+      );
+    })
   );
+  // Prendi il controllo di tutte le tab immediatamente
   self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached => {
+// ── FETCH: strategia Cache First, poi Network ─────────────────────────────────
+self.addEventListener('fetch', event => {
+  // Ignora richieste non-GET e richieste a domini esterni (es. Google Fonts)
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // Per Google Fonts usa Network First (per aggiornamenti font)
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Per tutto il resto: Cache First
+  event.respondWith(
+    caches.match(event.request).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200 || res.type === 'opaque') return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }).catch(() => caches.match('./index.html'));
+      return fetch(event.request).then(response => {
+        // Cacha solo risposte valide
+        if (!response || response.status !== 200 || response.type === 'opaque') {
+          return response;
+        }
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return response;
+      });
     })
   );
 });
