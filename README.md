@@ -1,89 +1,72 @@
-# Roman — Task Manager
+# Roman Task Manager — v4.0
 
-Task manager personale per studio universitario e mediazione creditizia. App web progressiva (PWA), zero server, dati in `localStorage`.
+PWA task manager per sociologia Sapienza e mediatori creditizi.  
+Stack: HTML · CSS · JetBrains Mono · Vanilla JS · localStorage · Service Worker
 
 ---
 
-## Struttura repository
+## Deploy su GitHub Pages
+
+1. Crea un repository pubblico su GitHub (es. `roman-tasks`)
+2. Carica **tutti i file** nella root del repo (inclusa la cartella `icons/`)
+3. Vai in **Settings → Pages → Source: Deploy from branch → main / root**
+4. Attendi ~60 secondi → `https://tuousername.github.io/roman-tasks/`
+
+---
+
+## Installazione su iPhone (PWA)
+
+1. Apri l'URL in **Safari** (non Chrome)
+2. Tocca **Condividi** (rettangolo con freccia)
+3. Scorri → **"Aggiungi alla schermata Home"**
+4. Conferma → l'app appare come icona nativa senza barra Safari
+
+---
+
+## Struttura file
 
 ```
 /
-├── index.html       ← app principale
-├── manifest.json    ← manifest PWA (installazione su homescreen)
-├── sw.js            ← service worker (offline support)
-├── 404.html         ← redirect per GitHub Pages
-├── _config.yml      ← config GitHub Pages (disabilita Jekyll)
-└── README.md
-```
-
-> **Nota:** le icone PWA sono opzionali. Se vuoi aggiungerle, crea una cartella `icons/` con `icon-192.png` e `icon-512.png`.
-
----
-
-## Deploy su GitHub Pages (5 minuti)
-
-### 1. Crea il repository
-
-Vai su https://github.com/new e crea un repo pubblico, ad esempio `roman-tasks`.
-
-### 2. Carica i file
-
-**Via interfaccia web:**
-1. Apri il repo appena creato
-2. Clicca Add file → Upload files
-3. Trascina tutti i file di questa cartella
-4. Clicca Commit changes
-
-**Via Git (terminale):**
-```bash
-git init
-git add .
-git commit -m "Initial deploy"
-git branch -M main
-git remote add origin https://github.com/TUO_USERNAME/roman-tasks.git
-git push -u origin main
-```
-
-### 3. Attiva GitHub Pages
-
-1. Vai su Settings (tab in alto nel repo)
-2. Sezione Pages nel menu laterale sinistro
-3. Source: seleziona Deploy from a branch
-4. Branch: main / root
-5. Clicca Save
-
-### 4. Accedi all'app
-
-Dopo 1-2 minuti l'app sarà disponibile su:
-```
-https://TUO_USERNAME.github.io/roman-tasks/
+├── index.html          ← shell HTML, layout, markup
+├── app.js              ← tutta la logica JS (nessun inline handler)
+├── sw.js               ← Service Worker (cache-first, offline)
+├── manifest.json       ← PWA manifest
+├── README.md
+└── icons/
+    ├── icon-180.png    ← apple-touch-icon (iOS home screen)
+    ├── icon-192.png    ← Android / PWA
+    ├── icon-512.png    ← splash / store
+    └── icon-152.png    ← iPad
 ```
 
 ---
 
-## Installa come app (PWA)
+## Sezioni
 
-### iOS (Safari)
-1. Apri l'URL in Safari
-2. Tocca il pulsante Condividi
-3. Seleziona Aggiungi a schermata Home
+| Sezione | Descrizione |
+|---------|-------------|
+| **Home** | Tutte le task, ricerca, ordinamento, stats |
+| **Università** | Filtro categoria `university`, progress bar |
+| **Mediazione** | Filtro `credit` + calcolatore DSR/PTI/LTV integrato |
+| **Pomodoro** | Timer 25/5/15 min, ring SVG, streak, beep |
+| **Impostazioni** | Tema dark/light/auto, notifiche, auto-delete, export/import |
 
-### Android (Chrome)
-1. Apri l'URL in Chrome
-2. Tocca i tre puntini in alto a destra
-3. Seleziona Aggiungi a schermata Home
+## Scorciatoie tastiera (desktop)
 
-### Desktop (Chrome/Edge)
-1. Apri l'URL
-2. Clicca sull'icona di installazione nella barra degli indirizzi
-3. Clicca Installa
+| Tasto | Azione |
+|-------|--------|
+| `Ctrl+N` | Nuova task |
+| `Ctrl+F` | Focus ricerca |
+| `Ctrl+1-4` | Cambia sezione |
+| `Ctrl+Enter` | Salva modal aperto |
+| `Esc` | Chiudi modal / drawer |
+| `↑ ↓` | Naviga task |
+| `Enter` | Apri task selezionata |
+| `Delete` | Elimina task selezionata |
 
 ---
 
-## Aggiornare l'app
+## Changelog
 
-Modifica index.html, fai commit e push. GitHub Pages si aggiorna automaticamente. Per forzare l'aggiornamento sui dispositivi con app installata, aggiorna il numero di versione in sw.js (CACHE_NAME = 'roman-tasks-v2').
-
----
-
-*Roman Task Manager · Studio & Credito*
+- **v4.0** — Refactor completo: JetBrains Mono, stile minimal b/n, zero inline handlers, event delegation, ES5-safe, iOS safe areas, dark/light auto, drag & drop, snooze, auto-delete, export JSON/PDF, calcolatore creditizio integrato
+- **v3.4** (Roman originale) — Base features, DM Mono/Syne, multi-accent, icon picker

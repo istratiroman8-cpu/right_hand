@@ -1,12 +1,14 @@
 {
-  "name": "Roman — Task Manager",
+  "name": "Roman",
   "short_name": "Roman",
-  "description": "Task manager personale per studio universitario e mediazione creditizia.",
-  "start_url": "/",
+  "description": "Task Manager per sociologia Sapienza e mediatori creditizi",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#0e0f13",
-  "theme_color": "#0e0f13",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "lang": "it",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -19,6 +21,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

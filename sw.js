@@ -1,73 +1,75 @@
-// Roman Task Manager — Service Worker
-// Versione cache: aggiorna questo valore ad ogni deploy per invalidare la cache
-const CACHE_NAME = 'roman-tasks-v1';
+'use strict';
 
-// Risorse da pre-cachare (tutte le risorse essenziali dell'app)
-const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+var CACHE = 'roman-v4.0';
+var ASSETS = [
+  './',
+  './index.html',
+  './app.js',
+  './manifest.json',
+  './icons/icon-180.png',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
 ];
 
-// ── INSTALL: pre-cacha le risorse essenziali ──────────────────────────────────
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(PRECACHE_URLS);
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function(c) {
+      return c.addAll(ASSETS);
+    }).then(function() {
+      return self.skipWaiting();
     })
   );
-  // Attiva immediatamente senza aspettare che le tab esistenti vengano chiuse
-  self.skipWaiting();
 });
 
-// ── ACTIVATE: rimuovi cache obsolete ─────────────────────────────────────────
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(keys) {
       return Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
+        keys.filter(function(k) { return k !== CACHE; })
+            .map(function(k) { return caches.delete(k); })
       );
+    }).then(function() {
+      return self.clients.claim();
     })
   );
-  // Prendi il controllo di tutte le tab immediatamente
-  self.clients.claim();
 });
 
-// ── FETCH: strategia Cache First, poi Network ─────────────────────────────────
-self.addEventListener('fetch', event => {
-  // Ignora richieste non-GET e richieste a domini esterni (es. Google Fonts)
-  if (event.request.method !== 'GET') return;
-
-  const url = new URL(event.request.url);
-
-  // Per Google Fonts usa Network First (per aggiornamenti font)
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
+self.addEventListener('fetch', function(e) {
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.startsWith('chrome-extension')) return;
+  if (e.request.url.indexOf('fonts.googleapis.com') !== -1 ||
+      e.request.url.indexOf('fonts.gstatic.com') !== -1) {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(e.request).then(function(resp) {
+          var clone = resp.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+          return resp;
+        });
+      })
     );
     return;
   }
-
-  // Per tutto il resto: Cache First
-  event.respondWith(
-    caches.match(event.request).then(cached => {
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).catch(function() {
+        return caches.match('./index.html');
+      })
+    );
+    return;
+  }
+  e.respondWith(
+    caches.match(e.request).then(function(cached) {
       if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Cacha solo risposte valide
-        if (!response || response.status !== 200 || response.type === 'opaque') {
-          return response;
+      return fetch(e.request).then(function(resp) {
+        if (resp && resp.status === 200 && resp.type === 'basic') {
+          var clone = resp.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
         }
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
+        return resp;
+      }).catch(function() {
+        return caches.match('./index.html');
       });
     })
   );
