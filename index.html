@@ -380,8 +380,10 @@ body{background:var(--bg);color:var(--fg);}
 .task-body{flex:1;min-width:0;}
 .task-title{font-size:12px;color:var(--fg);line-height:1.5;word-break:break-word;font-weight:400;}
 .task-note{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.45;word-break:break-word;}
+.task-sub{font-size:9px;color:var(--muted);}
 .task-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:5px;}
 .tag{font-size:8.5px;padding:2px 6px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;white-space:nowrap;}
+.tag-custom{background:rgba(128,128,128,.08);color:var(--muted);}
 .tag-u{background:rgba(108,159,255,.1);color:#6c9fff;}
 .tag-c{background:rgba(244,169,78,.1);color:var(--orange);}
 .tag-p{background:rgba(126,232,162,.1);color:var(--green);}
@@ -520,7 +522,7 @@ body{background:var(--bg);color:var(--fg);}
   padding:9px 11px;outline:none;transition:border-color .14s;
   -webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none;
 }
-.fs{-webkit-appearance:auto;appearance:auto;font-size:14px;}
+.fs{-webkit-appearance:auto;appearance:auto;font-size:16px;}
 .fi:focus,.fs:focus,.ft:focus{border-color:var(--fg);}
 .ft{min-height:64px;resize:vertical;line-height:1.5;}
 .fi::placeholder,.ft::placeholder{color:var(--muted);font-size:12px;}
@@ -839,6 +841,7 @@ body{background:var(--bg);color:var(--fg);}
       <button class="icon-btn" id="add-credit-btn" aria-label="Nuova task"><span class="ms" style="font-size:18px">add</span></button>
     </div>
   </header>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill-credit"></div></div>
   <div class="calc-panel" id="calc-panel">
     <div class="calc-title">Calcolatore DSR / PTI / LTV</div>
     <div class="calc-row"><span class="calc-lbl">Reddito netto/mese (€)</span><input class="calc-in" type="number" id="cc-r" placeholder="2000" inputmode="decimal"/></div>
