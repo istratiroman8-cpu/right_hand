@@ -8,7 +8,10 @@
   "background_color": "#111111",
   "theme_color": "#111111",
   "lang": "it",
-  "categories": ["productivity", "utilities"],
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -28,5 +31,7 @@
       "type": "image/png",
       "purpose": "any"
     }
-  ]
+  ],
+  "scope": "./",
+  "id": "./roman"
 }

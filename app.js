@@ -1,7 +1,7 @@
 'use strict';
 
 /* ─────────────────────────────────────────────────────────────
-   Roman Task Manager — v4.1 final
+   Roman Task Manager — v4.1 final (UI refresh)
    Fixes vs v4.0:
    · Event delegation wired ONCE on stable containers, not per-render
    · Confetti closure bug fixed (IIFE per iteration)
@@ -341,7 +341,7 @@ function renderActive() {
 }
 
 function renderGroup(label, arr) {
-  return '<div class="task-group-hdr"><span class="group-lbl">'+label+' ('+arr.length+')</span><div class="group-line"></div></div>'
+  return '<div class="grp-hdr"><span class="grp-lbl">'+label+' ('+arr.length+')</span><div class="grp-line"></div></div>'
     + arr.map(renderCard).join('');
 }
 
@@ -522,7 +522,7 @@ function selCat(cat) {
 function delCurrentTask(){ if(!editingId) return; closeModal(); delTask(editingId); }
 
 /* ══ POMODORO  r=83 → C≈521.50 ══ */
-var POMO_R    = 2*Math.PI*83;
+var POMO_R    = 2*Math.PI*81;
 var POMO_MODES= { work:{label:'Lavoro',secs:25*60}, short:{label:'Pausa Breve',secs:5*60}, long:{label:'Pausa Lunga',secs:15*60} };
 var POMO_ORDER=['work','short','long'];
 var pomoMode='work', pomoSecs=25*60, pomoRunning=false, pomoInterval=null;
@@ -925,7 +925,23 @@ function wireEvents() {
 
 /* ══ SERVICE WORKER ══ */
 function registerSW() {
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(function(reg) {
+      /* Quando arriva un nuovo SW, non forzare reload automatico.
+         Su iOS Safari PWA il reload durante splash causa il loop di caricamento.
+         Il nuovo SW si attiverà al prossimo avvio naturale dell'app. */
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        if (!newSW) return;
+        newSW.addEventListener('statechange', function() {
+          /* nessun reload forzato — l'utente aggiornerà alla prossima apertura */
+        });
+      });
+    })
+    .catch(function(err) {
+      console.warn('SW registration failed:', err);
+    });
 }
 
 /* ══ INIT ══ */
@@ -947,9 +963,17 @@ document.addEventListener('DOMContentLoaded',function() {
     var ring=$('pomo-ring');
     if(ring){ ring.style.strokeDasharray=String(POMO_R); ring.style.strokeDashoffset='0'; }
   });
-  setTimeout(function() {
-    var splash=$('splash'); if(!splash) return;
-    splash.classList.add('hidden');
-    setTimeout(function(){ if(splash.parentNode) splash.parentNode.removeChild(splash); },360);
-  },440);
+  setTimeout(hideSplash, 440);
+});
+
+function hideSplash() {
+  var splash = $('splash'); if (!splash) return;
+  splash.classList.add('hidden');
+  setTimeout(function() { if (splash && splash.parentNode) splash.parentNode.removeChild(splash); }, 360);
+}
+
+/* Safety net: se la pagina torna dal bfcache (iOS back/forward)
+   assicurati che lo splash non blocchi nulla */
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) hideSplash();
 });
